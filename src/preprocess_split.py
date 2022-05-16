@@ -5,12 +5,12 @@ import pandas as pd
 
 if __name__ == '__main__':
 
-    annotations_path = Path("./data/annotations/")
+    annotations_path = Path("../data/annotations/")
     data = []
     for instance in os.listdir(annotations_path):
         tree = ET.parse(annotations_path/instance)
         root = tree.getroot()
-        attributes = {"path": root[0].text+"/"+root[1].text,
+        attributes = {"file": root[1].text,
                       "width": root[2][0].text,
                       "height": root[2][1].text,
                       "depth": root[2][2].text,

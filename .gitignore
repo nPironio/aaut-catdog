@@ -1,3 +1,6 @@
+# python setup files
+*.egg-info
+
 # virtualenv
 .venv
 

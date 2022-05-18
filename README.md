@@ -5,7 +5,7 @@
 - Instalar el paquete `catdog`:
     - moverse a `src/catdog`
     - correr `python setup.py develop --user`
-- Instalar los requirements en `requirements.txt`
+- Instalar dependencias corriendo `./install_script.sh`.
 - Descargar la data de https://www.kaggle.com/datasets/andrewmvd/dog-and-cat-detection
 - Crear una carpeta `data` y extraer el contenido ahí
 

@@ -6,8 +6,16 @@
     - moverse a `src/catdog`
     - correr `python setup.py develop --user`
 - Instalar dependencias corriendo `./install_script.sh`.
-- Descargar la data de https://www.kaggle.com/datasets/andrewmvd/dog-and-cat-detection
-- Crear una carpeta `data` y extraer el contenido ahí
+ y extraer el contenido ahí
+
+## Data
+- Crear una carpeta `data`
+- El dataset utilizado se puede descargar 
+    - manualmente [acá](https://www.kaggle.com/datasets/andrewmvd/dog-and-cat-detection).
+    - También se puede descargar usando la [kaggle CLI](https://github.com/Kaggle/kaggle-api) con el comando:
+  
+          kaggle datasets download -d andrewmvd/dog-and-cat-detection
+- Extraer el contenido del zip descargado dentro de la carpeta `data`.
 
 ## Codigo
 

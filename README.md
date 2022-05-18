@@ -16,6 +16,7 @@
   
           kaggle datasets download -d andrewmvd/dog-and-cat-detection
 - Extraer el contenido del zip descargado dentro de la carpeta `data`.
+- Correr el comando `python src/preprocess_split.py`
 
 ## Codigo
 

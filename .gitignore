@@ -6,3 +6,12 @@
 
 # pycharm stuff
 .idea
+
+# data dir
+data
+
+# jupyter checkpoints
+.ipynb_checkpoints
+
+# python import files
+*__pycache__/

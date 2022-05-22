@@ -1,15 +1,18 @@
-from torch.utils.data import Dataset
-from PIL import Image
 import numpy as np
+
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision.transforms import Resize
 
 
 class CatDogDataset(Dataset):
-    def __init__(self, cat_dog_df, transforms=None, img_path="../data/images/"):
+    def __init__(self, cat_dog_df, transforms=None, img_output_size=(500,500), img_path="../data/images/"):
         self.files = (img_path + cat_dog_df["file"]).values
         self.width = cat_dog_df["width"].values
         self.height = cat_dog_df["height"].values
         self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0)
         self.bbox = cat_dog_df[["xmin", "ymin", "xmax", "ymax"]].values
+        self.resizer = Resize(img_output_size)
 
         self.transforms = transforms
 
@@ -17,9 +20,10 @@ class CatDogDataset(Dataset):
         return len(self.files)
 
     def __getitem__(self, idx):
-        img = np.asarray(Image.open(self.files[idx]).convert("RGB"))
+        resized_img = self.resizer(Image.open(self.files[idx]).convert("RGB"))
+        np_img = np.asarray(resized_img)
         bbox = self.bbox[idx]
         if self.transforms is not None:
-            img, bbox = self.transforms(img, bbox)
+            np_img, bbox = self.transforms(np_img, bbox)
 
-        return img, self.target[idx], bbox
+        return np_img, self.target[idx], bbox

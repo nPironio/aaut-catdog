@@ -15,3 +15,7 @@ data
 
 # python import files
 *__pycache__/
+
+# training logs
+*/lightning_logs/
+

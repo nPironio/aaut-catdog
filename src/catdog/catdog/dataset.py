@@ -2,7 +2,7 @@ import numpy as np
 
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision.transforms import Resize
+import torchvision.transforms as fn
 
 
 class CatDogDataset(Dataset):
@@ -12,7 +12,7 @@ class CatDogDataset(Dataset):
         self.height = cat_dog_df["height"].values
         self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0)
         self.bbox = cat_dog_df[["xmin", "ymin", "xmax", "ymax"]].values
-        self.resizer = Resize(img_output_size)
+        self.resizer = fn.Resize(img_output_size)
 
         self.transforms = transforms
 
@@ -26,4 +26,5 @@ class CatDogDataset(Dataset):
         if self.transforms is not None:
             np_img, bbox = self.transforms(np_img, bbox)
 
-        return np_img, self.target[idx], bbox
+        torch_img = fn.functional.to_tensor(np_img)
+        return torch_img, self.target[idx], bbox

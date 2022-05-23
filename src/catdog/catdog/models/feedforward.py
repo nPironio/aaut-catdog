@@ -22,9 +22,12 @@ class MLPClassifier(CatDogClassifier):
         self.model = torch.nn.Sequential(*layers, CatDogOutput(last_layer_input_size))
         self.save_hyperparameters("optimizer_params", "bbox_alpha")
 
-    def forward(self, x):
-        flattened_x = x.reshape((self.batch_size,-1))  # TODO(cgiudice): move this out so self.model(x) also uses reshape
-        return super().forward(flattened_x)
+    def preprocess_img(self, img):
+        return img.flatten(start_dim=1, end_dim=-1) #TODO(niko): won't work if it's just one instance
+
+    # def forward(self, x):
+    #     # flattened_x = x.reshape((self.batch_size,-1))  # TODO(cgiudice): move this out so self.model(x) also uses reshape
+    #     return super().forward(flattened_x)
 
     def configure_optimizers(self):
         params = self.hparams["optimizer_params"]

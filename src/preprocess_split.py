@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
+
+import numpy as np
 import pandas as pd
 
 if __name__ == '__main__':
@@ -22,7 +24,15 @@ if __name__ == '__main__':
                       }
         data.append(attributes)
 
-    df = pd.DataFrame.from_records(data)
+    df = pd.DataFrame.from_records(data).astype({coord: np.int32 for coord in ["xmin", "xmax", "ymin", "ymax",
+                                                                               "width", "height"]})
+
+    # Scale x, y coordinates to relative position
+    df['xmin'] /= df['width']
+    df['xmax'] /= df['width']
+    df['ymin'] /= df['height']
+    df['ymax'] /= df['height']
+
     test = df.groupby("class").apply(lambda x: x.sample(frac=0.2, random_state=23))
     train = df[~df.file.isin(test.file)]
 

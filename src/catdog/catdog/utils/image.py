@@ -3,10 +3,13 @@ import matplotlib.image as mpimg
 import matplotlib.patches as patches
 
 
-def plot_image_bbox(img_path, category, xmin, ymin, xmax, ymax):
-    img = mpimg.imread(img_path)
-    plt.imshow(img)
-    plt.gca().add_patch(
+def plot_image_bbox(img, category, xmin, ymin, xmax, ymax, ax=None):
+    ax = plt.gca() if not ax else ax
+    xmin *= img.shape[0]
+    xmax *= img.shape[0]
+    ymin *= img.shape[1]
+    ymax *= img.shape[1]
+    ax.imshow(img)
+    ax.add_patch(
         patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1.5, edgecolor='r', facecolor='none'))
-    plt.gca().annotate(category, (xmax + 5, ymax + 5), color="r", size=15)
-    plt.show()
+    ax.annotate(category, (xmax + 5, ymax + 5), color="r", size=15)

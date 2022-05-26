@@ -18,8 +18,7 @@ class CatDogOutput(torch.nn.Module):
 
     def forward(self, x):
         classifier_logits, bbox_logits = self.classify_layer(x), self.bbox_layer(x)
-        # TODO: activation function on bbox_logits
-        classifier_pred, bbox_pred = F.sigmoid(classifier_logits), F.sigmoid(bbox_logits)
+        classifier_pred, bbox_pred = torch.nn.sigmoid(classifier_logits), torch.nn.sigmoid(bbox_logits)
         return classifier_pred, bbox_pred
 
 

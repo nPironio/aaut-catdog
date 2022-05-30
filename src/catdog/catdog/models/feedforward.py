@@ -23,7 +23,7 @@ class MLPClassifier(CatDogClassifier):
         self.save_hyperparameters("optimizer_params", "bbox_alpha")
 
     def preprocess_img(self, img):
-        return img.flatten(start_dim=1, end_dim=-1) #TODO(niko): won't work if it's just one instance
+        return img.flatten(start_dim=1, end_dim=-1) #won't work if it's just one instance
 
     # def forward(self, x):
     #     # flattened_x = x.reshape((self.batch_size,-1))  # TODO(cgiudice): move this out so self.model(x) also uses reshape

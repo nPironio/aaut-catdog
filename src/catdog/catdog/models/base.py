@@ -37,7 +37,7 @@ class CatDogClassifier(pl.LightningModule):
         :param x: Imagenes
         :return: clase, (xmin, ymin, xmax, ymax)
         """
-        with torch.no_grad():  # TODO(cgiudice): think whether or not this is necessary and where do we want it
+        with torch.no_grad():
             x = self.preprocess_img(x)
             pred_class, pred_bbox = self.model(x)
             return pred_class, pred_bbox
@@ -45,10 +45,14 @@ class CatDogClassifier(pl.LightningModule):
     def preprocess_img(self, img):
         return img
 
-    def training_step(self, batch, batch_idx):
+    def shared_step(self, batch):
         img, target, bbox = batch
-        input = self.preprocess_img(img)
-        pred_target, pred_bbox = self.model(input)
+        model_input = self.preprocess_img(img)
+        pred_target, pred_bbox = self.model(model_input)
+        return target, pred_target, bbox, pred_bbox
+
+    def training_step(self, batch, batch_idx):
+        target, pred_target, bbox, pred_bbox = self.shared_step(batch)
 
         # adds one dimension to target, just the way torch likes it
         target = target.unsqueeze(1).type('torch.FloatTensor')
@@ -63,9 +67,7 @@ class CatDogClassifier(pl.LightningModule):
         return classification_loss + self.hparams.bbox_alpha * bbox_loss
 
     def validation_step(self, val_batch, batch_idx):
-        img, target, bbox = val_batch
-        input = self.preprocess_img(img)
-        pred_target, pred_bbox = self.model(input)
+        target, pred_target, bbox, pred_bbox = self.shared_step(val_batch)
 
         # adds one dimension to target, just the way torch likes it
         target = target.unsqueeze(1).type('torch.FloatTensor')
@@ -78,9 +80,13 @@ class CatDogClassifier(pl.LightningModule):
         self.log("validation_classification_loss", classification_loss, prog_bar=True, on_step=True, on_epoch=False)
         self.log("validation_bbox_loss_loss", bbox_loss, prog_bar=True, on_step=True, on_epoch=False)
 
-        sel_idx = np.random.randint(len(img))
-        return {"img": img[sel_idx], "pred_target": pred_target[sel_idx], "pred_bbox": pred_bbox[sel_idx], "loss": loss}
+        imgs = val_batch[0]
+        sel_idx = np.random.randint(len(imgs))
+        return {"img": imgs[sel_idx], "pred_target": pred_target[sel_idx], "pred_bbox": pred_bbox[sel_idx], "loss": loss}
 
+
+    def threshold(self, y):
+        return y > 0.5
 
     def validation_epoch_end(self, outputs):
         val_loss = np.mean([x["loss"] for x in outputs])
@@ -91,10 +97,13 @@ class CatDogClassifier(pl.LightningModule):
 
         # Plot images with pred and bbox
         idxs = np.random.choice(len(imgs), size=min(3, len(imgs)), replace=False)
-        fig, axs = plt.subplots(nrows=1, ncols=min(3, len(imgs)))
-        for idx, ax in zip(idxs, axs):
-            plot_image_bbox(imgs[idx].permute((-2, -1, -3)), pred_targets[idx], *pred_bboxs[idx], ax=ax)
-        plt.tight_layout()
+        figs = []
+        for i, idx in enumerate(idxs):
+            fig = plt.figure(figsize=(8, 8))
+            plot_image_bbox(imgs[idx].permute((1, 2, 0)), "cat" if self.threshold(pred_targets[idx])[0] else "dog",
+                            *pred_bboxs[idx], ax=plt.gca())
+            plt.tight_layout()
+            figs.append(fig)
+        self.logger.experiment.add_figure(tag=f"predictions sample", figure=figs, global_step=self.global_step)
 
-        self.logger.experiment.add_figure(tag="predictions sample", figure=fig, global_step=self.global_step)
         self.log("val_loss", value=val_loss)

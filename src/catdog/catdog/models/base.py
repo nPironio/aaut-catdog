@@ -18,7 +18,7 @@ class CatDogOutput(torch.nn.Module):
 
     def forward(self, x):
         classifier_logits, bbox_logits = self.classify_layer(x), self.bbox_layer(x)
-        classifier_pred, bbox_pred = torch.nn.sigmoid(classifier_logits), torch.nn.sigmoid(bbox_logits)
+        classifier_pred, bbox_pred = torch.sigmoid(classifier_logits), torch.sigmoid(bbox_logits)
         return classifier_pred, bbox_pred
 
 
@@ -55,7 +55,7 @@ class CatDogClassifier(pl.LightningModule):
         target, pred_target, bbox, pred_bbox = self.shared_step(batch)
 
         # adds one dimension to target, just the way torch likes it
-        target = target.unsqueeze(1).type('torch.FloatTensor')
+        target = target.unsqueeze(1)
 
         classification_loss = F.binary_cross_entropy(pred_target, target)
         bbox_loss = F.mse_loss(pred_bbox, bbox)
@@ -70,7 +70,7 @@ class CatDogClassifier(pl.LightningModule):
         target, pred_target, bbox, pred_bbox = self.shared_step(val_batch)
 
         # adds one dimension to target, just the way torch likes it
-        target = target.unsqueeze(1).type('torch.FloatTensor')
+        target = target.unsqueeze(1)
 
         classification_loss = F.binary_cross_entropy(pred_target, target)
         bbox_loss = F.mse_loss(pred_bbox, bbox)
@@ -83,13 +83,35 @@ class CatDogClassifier(pl.LightningModule):
         imgs = val_batch[0]
         sel_idx = np.random.randint(len(imgs))
         return {"img": imgs[sel_idx], "pred_target": pred_target[sel_idx], "pred_bbox": pred_bbox[sel_idx], "loss": loss}
+    
+    def test_step(self, test_batch, batch_idx):
+        # TODO(cgiudice): move common code to shared_step method
+        target, pred_target, bbox, pred_bbox = self.shared_step(test_batch)
 
+        # adds one dimension to target, just the way torch likes it
+        target = target.unsqueeze(1)
+
+        classification_loss = F.binary_cross_entropy(pred_target, target)
+        bbox_loss = F.mse_loss(pred_bbox, bbox)
+        loss = classification_loss + self.hparams.bbox_alpha * bbox_loss
+
+        self.log('test_auroc', self.AUROC(pred_target, target.type(torch.int32)), on_step=True, on_epoch=False)
+        self.log("test_classification_loss", classification_loss, prog_bar=True, on_step=True, on_epoch=False)
+        self.log("test_bbox_loss_loss", bbox_loss, prog_bar=True, on_step=True, on_epoch=False)
+
+        imgs = test_batch[0]
+        sel_idx = np.random.randint(len(imgs))
+        metrics_dict = {"img": imgs[sel_idx], "pred_target": pred_target[sel_idx], "pred_bbox": pred_bbox[sel_idx],
+                "loss": loss}
+        
+        return metrics_dict
 
     def threshold(self, y):
         return y > 0.5
 
     def validation_epoch_end(self, outputs):
-        val_loss = np.mean([x["loss"] for x in outputs])
+        # import ipdb; ipdb.set_trace()
+        val_loss = np.mean([x["loss"].item() for x in outputs])  # item gives us the scalar in a one element tensor
         imgs = [x["img"] for x in outputs]
         pred_bboxs = [x["pred_bbox"] for x in outputs]
         pred_targets = [x["pred_target"] for x in outputs]
@@ -100,7 +122,8 @@ class CatDogClassifier(pl.LightningModule):
         figs = []
         for i, idx in enumerate(idxs):
             fig = plt.figure(figsize=(8, 8))
-            plot_image_bbox(imgs[idx].permute((1, 2, 0)), "cat" if self.threshold(pred_targets[idx])[0] else "dog",
+            plot_image_bbox(imgs[idx].permute((1, 2, 0)).detach().cpu(),  # make sure tensor is not in GPU
+                            "cat" if self.threshold(pred_targets[idx])[0] else "dog",
                             *pred_bboxs[idx], ax=plt.gca())
             plt.tight_layout()
             figs.append(fig)

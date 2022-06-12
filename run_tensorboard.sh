@@ -1,0 +1,1 @@
+tensorboard --logdir=./notebooks/lightning_logs/ --port=8891

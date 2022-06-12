@@ -10,7 +10,7 @@ class CatDogDataset(Dataset):
         self.files = (img_path + cat_dog_df["file"]).values
         self.width = cat_dog_df["width"].values
         self.height = cat_dog_df["height"].values
-        self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0)
+        self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0).astype(np.float32)
         self.bbox = cat_dog_df[["xmin", "ymin", "xmax", "ymax"]].values.astype(np.float32)
         self.resizer = fn.Resize(img_output_size)
 

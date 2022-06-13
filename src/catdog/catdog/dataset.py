@@ -6,13 +6,14 @@ import torchvision.transforms as fn
 
 
 class CatDogDataset(Dataset):
-    def __init__(self, cat_dog_df, transforms=None, img_output_size=(500,500), img_path="../data/images/"):
+    def __init__(self, cat_dog_df, transforms=None, feature_scaling=255, img_output_size=(500, 500), img_path="../data/images/"):
         self.files = (img_path + cat_dog_df["file"]).values
         self.width = cat_dog_df["width"].values
         self.height = cat_dog_df["height"].values
-        self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0)
+        self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0).astype(np.float32)
         self.bbox = cat_dog_df[["xmin", "ymin", "xmax", "ymax"]].values.astype(np.float32)
         self.resizer = fn.Resize(img_output_size)
+        self.scaling = feature_scaling
 
         self.transforms = transforms
 
@@ -21,10 +22,10 @@ class CatDogDataset(Dataset):
 
     def __getitem__(self, idx):
         resized_img = self.resizer(Image.open(self.files[idx]).convert("RGB"))
-        np_img = np.asarray(resized_img)
+        np_img = np.asarray(resized_img) / self.scaling
         bbox = self.bbox[idx]
         if self.transforms is not None:
             np_img, bbox = self.transforms(np_img, bbox)
 
-        torch_img = fn.functional.to_tensor(np_img)
+        torch_img = fn.functional.to_tensor(np_img).float()
         return torch_img, self.target[idx], bbox

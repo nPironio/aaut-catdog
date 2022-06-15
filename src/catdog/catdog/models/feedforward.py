@@ -3,10 +3,9 @@ from .base import CatDogClassifier, CatDogOutput
 
 
 class MLPClassifier(CatDogClassifier):
-    def __init__(self, input_size, activation=torch.nn.ReLU, hidden_sizes=(),
-                 optimizer_params=None, bbox_alpha=1):
+    def __init__(self, input_size, activation=torch.nn.ReLU, hidden_sizes=(), *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        super().__init__()
         layers = []
         if hidden_sizes:
             sizes = [input_size, *hidden_sizes]
@@ -33,3 +32,6 @@ class MLPClassifier(CatDogClassifier):
         params = self.hparams["optimizer_params"]
         params = self.get_default_optimizer_params() if not params else params
         return torch.optim.Adam(self.parameters(), **params)
+
+    def forward_pass(self, img):
+        return self.model(img)

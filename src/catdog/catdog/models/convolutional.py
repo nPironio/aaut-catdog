@@ -4,8 +4,9 @@ from catdog.utils.image import appropiate_padding
 
 
 class ConvolutionalClassifier(CatDogClassifier):
-    def __init__(self, input_shape, optimizer_params=None, bbox_alpha=1):
-        super().__init__()
+    def __init__(self, input_shape, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         in_channels, current_height, current_width = input_shape
         conv1 = torch.nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=(3, 3),
                                 # padding=appropiate_padding((current_height, current_width), (3,3))
@@ -25,9 +26,10 @@ class ConvolutionalClassifier(CatDogClassifier):
                                          CatDogOutput(36992)
                                          )
 
-        self.save_hyperparameters("optimizer_params", "bbox_alpha")
-
     def configure_optimizers(self):
         params = self.hparams["optimizer_params"]
         params = self.get_default_optimizer_params() if not params else params
         return torch.optim.Adam(self.parameters(), **params)
+
+    def forward_pass(self, img):
+        return self.model(img)

@@ -2,11 +2,8 @@
 
 ## Setup
 - Crear un virtual enviroment
-- Instalar el paquete `catdog`:
-    - moverse a `src/catdog`
-    - correr `python setup.py develop --user`
-- Instalar dependencias corriendo `./install_script.sh`.
- y extraer el contenido ahí
+- Instalar dependencias corriendo `./install_script.sh` desde el directorio root.
+
 
 ## Data
 - Crear una carpeta `data`
@@ -17,8 +14,3 @@
           kaggle datasets download -d andrewmvd/dog-and-cat-detection
 - Extraer el contenido del zip descargado dentro de la carpeta `data`.
 - Correr el comando `python src/preprocess_split.py`
-
-## Codigo
-
-### Preprocesamiento
-correr el script `preprocess_split.py` para generar los archivos csv con la información de las instancias

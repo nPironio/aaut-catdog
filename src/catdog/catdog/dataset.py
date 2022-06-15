@@ -1,13 +1,17 @@
 import numpy as np
+import torchvision.transforms as fn
 
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+from definitions import IMG_PATH
+
+
 
 class CatDogDataset(Dataset):
     def __init__(self, cat_dog_df, transformations=None, feature_scaling=255, img_output_size=(500, 500), img_path="../data/images/"):
-        self.files = (img_path + cat_dog_df["file"]).values
+        self.files = (IMG_PATH + cat_dog_df["file"]).values
         self.width = cat_dog_df["width"].values
         self.height = cat_dog_df["height"].values
         self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0).astype(np.float32)

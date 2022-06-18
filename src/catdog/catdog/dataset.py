@@ -10,7 +10,7 @@ from definitions import IMG_PATH
 
 
 class CatDogDataset(Dataset):
-    def __init__(self, cat_dog_df, transformations=None, feature_scaling=255, img_output_size=(500, 500), img_path="../data/images/"):
+    def __init__(self, cat_dog_df, transformations=None, feature_scaling=255, img_output_size=(500, 500)):
         self.files = (IMG_PATH + cat_dog_df["file"]).values
         self.width = cat_dog_df["width"].values
         self.height = cat_dog_df["height"].values
@@ -35,6 +35,6 @@ class CatDogDataset(Dataset):
 
         bbox = self.bbox[idx]
         if self.transformations is not None:
-            np_img, bbox = self.transformations(img, bbox)
+            img, bbox = self.transformations(img, bbox)
 
         return img, self.target[idx], bbox

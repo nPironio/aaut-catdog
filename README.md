@@ -1,7 +1,7 @@
 # aaut-catdog
 
 ## Setup
-- Crear un virtual enviroment
+- Crear un virtual enviroment de python 3.7
 - Instalar dependencias corriendo `./install_script.sh` desde el directorio root.
 
 

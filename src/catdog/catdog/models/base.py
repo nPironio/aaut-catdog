@@ -23,12 +23,18 @@ class CatDogOutput(torch.nn.Module):
 
 
 class CatDogClassifier(pl.LightningModule):
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, optimizer_params=None, bbox_alpha=1, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.AUROC = torchmetrics.AUROC()  # num_classes=2 was not meant for binary problems, but multiclass problems
         self.Precision = torchmetrics.Precision()
         self.Recall = torchmetrics.Recall()
         self.batch_size = 32  # TODO(cgiudice): either move this to a config file or receive it as parameter
+
+        optimizer_params = self.get_default_optimizer_params() if not optimizer_params else optimizer_params
+        self.save_hyperparameters("optimizer_params", "bbox_alpha")
+
+    def forward_pass(self, img):
+        raise NotImplementedError
 
     def get_default_optimizer_params(self):
         return {"lr": 0.02}
@@ -41,7 +47,7 @@ class CatDogClassifier(pl.LightningModule):
         """
         with torch.no_grad():
             x = self.preprocess_img(x)
-            pred_class, pred_bbox = self.model(x)
+            pred_class, pred_bbox = self.forward_pass(x)
             return pred_class, pred_bbox
 
     def preprocess_img(self, img):
@@ -50,10 +56,10 @@ class CatDogClassifier(pl.LightningModule):
     def _shared_step(self, batch):
         img, target, bbox = batch
         model_input = self.preprocess_img(img)
-        pred_target, pred_bbox = self.model(model_input)
+        pred_target, pred_bbox = self.forward_pass(model_input)
         # adds one dimension to target, just the way torch likes it
         target = target.unsqueeze(1)
-        
+
         classification_loss = F.binary_cross_entropy(pred_target, target)
         bbox_loss = F.mse_loss(pred_bbox, bbox)
         loss = classification_loss + self.hparams.bbox_alpha * bbox_loss
@@ -74,7 +80,7 @@ class CatDogClassifier(pl.LightningModule):
         return {"img": imgs[sel_idx], "sel_idx": sel_idx, "target": target,
                 "pred_target": pred_target, "pred_bbox": pred_bbox,
                 "classification_loss": classification_loss, "bbox_loss": bbox_loss, "loss": loss}
-    
+
     def test_step(self, batch, batch_idx):
         target, pred_target, bbox, pred_bbox, classification_loss, bbox_loss, loss = self._shared_step(batch)
         imgs = batch[0]

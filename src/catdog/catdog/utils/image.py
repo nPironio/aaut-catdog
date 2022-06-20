@@ -23,6 +23,20 @@ def plot_image_bbox(img, category, xmin, ymin, xmax, ymax, ax=None):
     ax.annotate(category, (xmax + 5, ymax + 5), color="r", size=15)
 
 
+class BBoxIdentityWrapper:
+    """
+    Provides a wrapper for image transforms that don't modify the bounding boxes.
+    Use case example:
+        >> wrappedColorJitter = BBoxIdentityWrapper(torchvision.transforms.ColorJitter(brightness=0, contrast=0,
+                                                                                    saturation=0, hue=0))
+        >> transformed_img, bbox = wrappedColorJitter(img, bbox)
+    """
+    def __init__(self, transform):
+        self.transform = transform
+
+    def __call__(self, img, bbox):
+        return self.transform(img), bbox
+
 class RandomHorizontalFlipBBox:
     def __init__(self, p=0.5):
         self.p = p

@@ -25,11 +25,9 @@ class CatDogOutput(torch.nn.Module):
 class CatDogClassifier(pl.LightningModule):
     def __init__(self, optimizer_params=None, bbox_alpha=1, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.AUROC = torchmetrics.AUROC()  # num_classes=2 was not meant for binary problems, but multiclass problems
+        self.AUROC = torchmetrics.AUROC()  # num_classes=2 was not meant for binary problems, but multiclass problems
         self.Precision = torchmetrics.Precision()
         self.Recall = torchmetrics.Recall()
-        self.batch_size = 32  # TODO(cgiudice): either move this to a config file or receive it as parameter
-
         optimizer_params = self.get_default_optimizer_params() if not optimizer_params else optimizer_params
         self.save_hyperparameters("optimizer_params", "bbox_alpha")
 

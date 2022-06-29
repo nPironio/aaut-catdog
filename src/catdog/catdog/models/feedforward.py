@@ -3,16 +3,21 @@ from .base import CatDogClassifier, CatDogOutput
 
 
 class MLPClassifier(CatDogClassifier):
-    def __init__(self, input_size, activation=torch.nn.ReLU, hidden_sizes=(), *args, **kwargs):
+    def __init__(self, input_size, activation=torch.nn.ReLU, hidden_sizes=(), dropout_p=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.dropout = torch.nn.Dropout(p=dropout_p)
 
         layers = []
         if hidden_sizes:
             sizes = [input_size, *hidden_sizes]
             for in_size, out_size in zip(sizes, sizes[1:]):
                 layers.append(torch.nn.Linear(in_size, out_size))
-                layers.append(torch.nn.BatchNorm1d(out_size))
+                if not dropout_p:  # assuming batchnorm does not work well with dropout
+                    layers.append(torch.nn.BatchNorm1d(out_size))
                 layers.append(activation())
+                if dropout_p:
+                    layers.append(self.dropout)
 
             last_layer_input_size = hidden_sizes[-1]
         else:

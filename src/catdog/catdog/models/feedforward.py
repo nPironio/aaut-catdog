@@ -24,7 +24,6 @@ class MLPClassifier(CatDogClassifier):
             last_layer_input_size = input_size
 
         self.model = torch.nn.Sequential(*layers, CatDogOutput(last_layer_input_size))
-        self.save_hyperparameters("optimizer_params", "bbox_alpha")
 
     def preprocess_img(self, img):
         return img.flatten(start_dim=1, end_dim=-1) #won't work if it's just one instance

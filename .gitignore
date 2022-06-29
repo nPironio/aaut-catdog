@@ -87,6 +87,7 @@ data
 # training stuff	
 notebooks/lightning_checkpoints/
 notebooks/tb_logs/
+experiment_results
 
 # charli stuff
 aaut_git/

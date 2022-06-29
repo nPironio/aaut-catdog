@@ -1,3 +1,4 @@
+import torch
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
@@ -17,7 +18,7 @@ def plot_image_bbox(img, category, xmin, ymin, xmax, ymax, ax=None):
     xmax *= img.shape[0]
     ymin *= img.shape[1]
     ymax *= img.shape[1]
-    ax.imshow(img)
+    ax.imshow(img.type(torch.uint8))
     ax.add_patch(
         patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1.5, edgecolor='r', facecolor='none'))
     ax.annotate(category, (xmax + 5, ymax + 5), color="r", size=15)

@@ -17,12 +17,9 @@ class CatDogDataset(Dataset):
         self.target = np.where(cat_dog_df["class"].values == "cat", 1, 0).astype(np.float32)
         self.bbox = cat_dog_df[["xmin", "ymin", "xmax", "ymax"]].values.astype(np.float32)
         self.resizer = transforms.Resize(img_output_size)
-
         self.to_tensor = transforms.ToTensor()
         self.normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.scaling = feature_scaling
-
-
         self.transformations = transformations
 
 

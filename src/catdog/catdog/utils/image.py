@@ -44,9 +44,10 @@ class RandomHorizontalFlipBBox:
         self.flipper = T.RandomHorizontalFlip(1)
 
     def __call__(self, img, bbox: np.ndarray):
-        flip = np.random.uniform(size=len(img)) < self.p
-        img[flip] = self.flipper(img[flip])
-        bbox[flip] = [1, 0, 1, 0] - bbox[flip][:, [2, 1, 0, 3]] * [1, -1, 1, -1]
+        if self.p < np.random.random():
+            # import ipdb; ipdb.set_trace()
+            img = self.flipper(img)
+            bbox = ([1, 0, 1, 0] - bbox[[2, 1, 0, 3]] * [1, -1, 1, -1]).astype(np.float32)
         return img, bbox
 
 
@@ -56,7 +57,7 @@ class RandomVerticalFlipBBox:
         self.flipper = T.RandomVerticalFlip(1)
 
     def __call__(self, img, bbox: np.ndarray):
-        flip = np.random.uniform(size=len(img)) < self.p
-        img[flip] = self.flipper(img[flip])
-        bbox[flip] = [0, 1, 0, 1] - bbox[flip][:, [0, 3, 2, 1]] * [-1, 1, -1, 1]
-        return img, bbox
+        if self.p < np.random.random():
+            img = self.flipper(img)
+            bbox = ([0, 1, 0, 1] - bbox[[0, 3, 2, 1]] * [-1, 1, -1, 1]).astype(np.float32)
+            return img, bbox
